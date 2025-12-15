@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamVerse - Discover Your Next Binge</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for Inter Font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary-blue': '#4F46E5', // Indigo-600
+                        'secondary-gray': '#1F2937', // Gray-800
+                        'accent-yellow': '#FBBF24', // Amber-400
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Load Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom scrollbar for aesthetics */
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background-color: #4F46E5;
+            border-radius: 20px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        /* Custom card hover effect for a cinematic feel */
+        .series-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform;
+        }
+        .series-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.15);
+        }
+        /* Style for the Modal (Hidden by default) */
+        #pitch-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans antialiased">
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-gray-800/90 backdrop-blur-sm shadow-xl border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="#" class="flex-shrink-0 text-2xl font-black text-primary-blue tracking-wider">
+                    Stream<span class="text-accent-yellow">Verse</span>
+                </a>
+                
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#featured" class="text-gray-300 hover:text-white transition duration-200 font-medium">Featured</a>
+                    <a href="#genres" class="text-gray-300 hover:text-white transition duration-200 font-medium">Genres</a>
+                    <a href="#new-releases" class="text-gray-300 hover:text-white transition duration-200 font-medium">New Releases</a>
+                    <a href="#contact" class="text-gray-300 hover:text-white transition duration-200 font-medium">Contact</a>
+                </nav>
+
+                <!-- Mobile Menu Button (Hamburger Icon) -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-blue transition duration-150" aria-label="Toggle Menu">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden pb-3 border-t border-gray-700">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-center">
+                <a href="#featured" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white w-full text-center">Featured</a>
+                <a href="#genres" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white w-full text-center">Genres</a>
+                <a href="#new-releases" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white w-full text-center">New Releases</a>
+                <a href="#contact" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white w-full text-center">Contact</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen flex items-center justify-center text-center overflow-hidden border-b-4 border-primary-blue/50" style="background-image: url('https://placehold.co/1920x1080/1F2937/FFFFFF?text=CINEMATIC+BACKGROUND'); background-size: cover; background-position: center;">
+        <!-- Overlay for contrast -->
+        <div class="absolute inset-0 bg-black opacity-70"></div>
+        
+        <div class="relative z-10 max-w-4xl px-4">
+            <h1 class="text-5xl sm:text-7xl font-extrabold leading-tight tracking-tighter mb-4 text-white">
+                Discover the Next <span class="text-accent-yellow">Binge-Worthy</span> Series
+            </h1>
+            <p class="text-lg sm:text-xl text-gray-300 mb-8">
+                Your curated gateway to the most talked-about and hidden-gem TV shows across all streaming platforms. Read detailed descriptions, view ratings, and track your favorites.
+            </p>
+            <a href="#featured" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-bold rounded-full text-white bg-primary-blue hover:bg-indigo-700 shadow-2xl shadow-primary-blue/50 transition duration-300 transform hover:scale-105">
+                Explore Top Shows
+            </a>
+        </div>
+    </section>
+
+    <!-- Featured Series Section -->
+    <main id="featured" class="py-16 md:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-4xl sm:text-5xl font-extrabold text-center mb-12 text-gray-100">
+            Series Spotlight
+        </h2>
+
+        <!-- Series Grid -->
+        <!-- Grid adjusted to support 10 cards cleanly with responsive breakpoints -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+
+            <!-- Series Card 1: The Abyss (Sci-Fi Thriller) -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/374151/FFFFFF?text=The+Abyss" alt="Poster for The Abyss" class="w-full h-48 object-cover object-top">
+                <div class="p-6">
+                    <span class="inline-block bg-accent-yellow text-gray-900 text-xs font-bold px-3 py-1 rounded-full mb-3">Sci-Fi Thriller</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">The Abyss</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">9.1</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-abyss" class="text-gray-400 text-sm line-clamp-3">
+                        A team of deep-sea researchers uncovers an ancient, powerful artifact at the bottom of the Mariana Trench, leading to a global struggle for survival.
+                    </p>
+                    <button onclick="generatePitch('The Abyss', 'Sci-Fi Thriller', document.getElementById('desc-abyss').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Series Card 2: Echoes of Time (Historical Drama) -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/4B5563/FFFFFF?text=Echoes+of+Time" alt="Poster for Echoes of Time" class="w-full h-48 object-cover object-center">
+                <div class="p-6">
+                    <span class="inline-block bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">Historical Drama</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">Echoes of Time</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">8.7</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-echoes" class="text-gray-400 text-sm line-clamp-3">
+                        Following two families through a century of conflict and innovation, this epic saga explores the human cost of progress and legacy.
+                    </p>
+                    <button onclick="generatePitch('Echoes of Time', 'Historical Drama', document.getElementById('desc-echoes').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Series Card 3: Pixel Heist (Crime/Action) -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/6B7280/FFFFFF?text=Pixel+Heist" alt="Poster for Pixel Heist" class="w-full h-48 object-cover object-bottom">
+                <div class="p-6">
+                    <span class="inline-block bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">Crime/Action</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">Pixel Heist</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">9.4</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-heist" class="text-gray-400 text-sm line-clamp-3">
+                        A group of genius hackers attempts to pull off the greatest cryptocurrency theft in history, facing off against international agencies.
+                    </p>
+                    <button onclick="generatePitch('Pixel Heist', 'Crime/Action', document.getElementById('desc-heist').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Series Card 4: Cosmic Drift (Fantasy/Adventure) -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/9CA3AF/FFFFFF?text=Cosmic+Drift" alt="Poster for Cosmic Drift" class="w-full h-48 object-cover object-top">
+                <div class="p-6">
+                    <span class="inline-block bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">Fantasy/Adventure</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">Cosmic Drift</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">8.9</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-drift" class="text-gray-400 text-sm line-clamp-3">
+                        When a normal teenager discovers they can travel between dimensions, they must choose between two realities to save their family.
+                    </p>
+                    <button onclick="generatePitch('Cosmic Drift', 'Fantasy/Adventure', document.getElementById('desc-drift').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Series Card 5: Stranger Things (Sci-Fi Horror) -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/1975749890702850878" 
+                     onerror="this.onerror=null; this.src='https://placehold.co/600x400/DC2626/FFFFFF?text=Stranger+Things';"
+                     alt="Poster for Stranger Things" class="w-full h-48 object-cover object-top">
+                <div class="p-6">
+                    <span class="inline-block bg-red-700 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">Sci-Fi Horror</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">Stranger Things</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">8.7</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-stranger-things" class="text-gray-400 text-sm line-clamp-3">
+                        In 1980s Indiana, a group of young friends witnesses supernatural forces and secret government experiments after a young boy vanishes mysteriously.
+                    </p>
+                    <button onclick="generatePitch('Stranger Things', 'Sci-Fi Horror', document.getElementById('desc-stranger-things').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Series Card 6: The Quantum Leap (Sci-Fi/Mystery) - NEW -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/4F46E5/FFFFFF?text=The+Quantum+Leap" alt="Poster for The Quantum Leap" class="w-full h-48 object-cover object-top">
+                <div class="p-6">
+                    <span class="inline-block bg-primary-blue text-white text-xs font-bold px-3 py-1 rounded-full mb-3">Sci-Fi/Mystery</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">The Quantum Leap</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">9.0</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-quantum" class="text-gray-400 text-sm line-clamp-3">
+                        A brilliant physicist accidentally tears a hole in the fabric of reality, forcing him to solve complex paradoxes across multiple timelines to save his daughter.
+                    </p>
+                    <button onclick="generatePitch('The Quantum Leap', 'Sci-Fi/Mystery', document.getElementById('desc-quantum').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Series Card 7: Monarch's Fall (Political Drama) - NEW -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/94A3B8/FFFFFF?text=Monarch's+Fall" alt="Poster for Monarch's Fall" class="w-full h-48 object-cover object-center">
+                <div class="p-6">
+                    <span class="inline-block bg-yellow-600 text-gray-900 text-xs font-bold px-3 py-1 rounded-full mb-3">Political Drama</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">Monarch's Fall</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">8.5</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-monarch" class="text-gray-400 text-sm line-clamp-3">
+                        The intricate lives of a fictional British royal family unravel as a modern scandal threatens to dismantle centuries of tradition and public trust.
+                    </p>
+                    <button onclick="generatePitch('Monarch\'s Fall', 'Political Drama', document.getElementById('desc-monarch').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Series Card 8: Midnight Diner (Culinary/Slice of Life) - NEW -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/FBBF24/1F2937?text=Midnight+Diner" alt="Poster for Midnight Diner" class="w-full h-48 object-cover object-bottom">
+                <div class="p-6">
+                    <span class="inline-block bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">Culinary/Slice of Life</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">Midnight Diner</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">9.2</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-diner" class="text-gray-400 text-sm line-clamp-3">
+                        An anthology series about a small, late-night diner in Tokyo where the owner serves one dish but listens to all the city's poignant and personal stories.
+                    </p>
+                    <button onclick="generatePitch('Midnight Diner', 'Culinary/Slice of Life', document.getElementById('desc-diner').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Series Card 9: The Circuit (Documentary) - NEW -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/4B5563/FFFFFF?text=The+Circuit" alt="Poster for The Circuit" class="w-full h-48 object-cover object-top">
+                <div class="p-6">
+                    <span class="inline-block bg-teal-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">Documentary</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">The Circuit</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">8.8</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-circuit" class="text-gray-400 text-sm line-clamp-3">
+                        An unfiltered look into the cutthroat world of professional e-sports, following five struggling young players on their journey to the world championship.
+                    </p>
+                    <button onclick="generatePitch('The Circuit', 'Documentary', document.getElementById('desc-circuit').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Series Card 10: Wilderness Whispers (Nature/Survival) - NEW -->
+            <div class="series-card bg-secondary-gray rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+                <img src="https://placehold.co/600x400/10B981/FFFFFF?text=Wilderness+Whispers" alt="Poster for Wilderness Whispers" class="w-full h-48 object-cover object-bottom">
+                <div class="p-6">
+                    <span class="inline-block bg-green-700 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">Nature/Survival</span>
+                    <h3 class="text-xl font-bold mb-2 truncate">Wilderness Whispers</h3>
+                    <div class="flex items-center mb-4">
+                        <span class="text-lg font-bold text-primary-blue">8.6</span>
+                        <span class="ml-2 text-sm text-gray-400">IMDb Rating</span>
+                    </div>
+                    <p id="desc-survival" class="text-gray-400 text-sm line-clamp-3">
+                        A seasoned survival expert guides a camera crew through the planet's most extreme and isolated environments, revealing the enduring secrets of the wild.
+                    </p>
+                    <button onclick="generatePitch('Wilderness Whispers', 'Nature/Survival', document.getElementById('desc-survival').textContent.trim())" class="mt-4 w-full bg-primary-blue/80 hover:bg-primary-blue text-white py-2 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
+                        <span class="text-lg">✨</span> <span>Generate Pitch</span>
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Call to Action Banner -->
+        <div id="genres" class="mt-20 p-10 bg-gray-800 rounded-2xl shadow-inner border border-primary-blue/50 text-center">
+            <h3 class="text-3xl font-extrabold mb-3 text-gray-100">Can't Find Your Vibe?</h3>
+            <p class="text-gray-400 mb-6">Explore our complete library categorized by genre.</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#" class="px-5 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition duration-150">Action</a>
+                <a href="#" class="px-5 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition duration-150">Comedy</a>
+                <a href="#" class="px-5 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition duration-150">Mystery</a>
+                <a href="#" class="px-5 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition duration-150">Documentary</a>
+                <a href="#" class="px-5 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600 transition duration-150">More Genres &rarr;</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for displaying LLM Pitch -->
+    <div id="pitch-modal" class="hidden" onclick="this.classList.add('hidden'); this.style.display='none';">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-3xl max-w-lg w-11/12 transform transition-all duration-300 scale-100" onclick="event.stopPropagation()">
+            <h3 id="modal-title" class="text-2xl font-bold text-accent-yellow mb-4">Generated Pitch</h3>
+            <p id="modal-content" class="text-gray-200 text-lg mb-6"></p>
+            <button onclick="document.getElementById('pitch-modal').classList.add('hidden'); document.getElementById('pitch-modal').style.display='none';" class="w-full bg-primary-blue hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition duration-200">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-800 border-t border-gray-700 mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Brand Info -->
+                <div>
+                    <h4 class="text-xl font-black text-primary-blue tracking-wider mb-4">
+                        Stream<span class="text-accent-yellow">Verse</span>
+                    </h4>
+                    <p class="text-sm text-gray-400">
+                        The ultimate destination for TV show enthusiasts. Never miss a masterpiece.
+                    </p>
+                </div>
+                <!-- Quick Links -->
+                <div>
+                    <h5 class="text-lg font-semibold text-white mb-4">Navigation</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#featured" class="text-gray-400 hover:text-white transition duration-150">Home</a></li>
+                        <li><a href="#new-releases" class="text-gray-400 hover:text-white transition duration-150">New Releases</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-150">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <!-- Support -->
+                <div>
+                    <h5 class="text-lg font-semibold text-white mb-4">Support</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-150">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-150">Report a Bug</a></li>
+                        <li><a href="mailto:contact@streamverse.com" class="text-gray-400 hover:text-white transition duration-150">Contact Us</a></li>
+                    </ul>
+                </div>
+                <!-- Social Media -->
+                <div>
+                    <h5 class="text-lg font-semibold text-white mb-4">Connect</h5>
+                    <div class="flex space-x-4">
+                        <!-- Placeholder Icons (can be replaced with SVGs or Font Awesome if needed) -->
+                        <a href="#" aria-label="Facebook" class="text-gray-400 hover:text-primary-blue transition duration-150">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M14 13.5h2.5l1-4H14v-2c0-1.77 2-2 2-2h3v-3h-3c-3.1 0-5 1.5-5 4v3.5H7v4h2v8h4v-8z"/></svg>
+                        </a>
+                        <a href="#" aria-label="Twitter" class="text-gray-400 hover:text-primary-blue transition duration-150">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 4.02C21.2 4.47 20.3 4.75 19.3 4.88C20.3 4.3 21.1 3.4 21.5 2.3C20.5 2.85 19.4 3.2 18.2 3.4C17.2 2.7 16 2.3 14.8 2.3C12.4 2.3 10.3 4.2 10.3 6.6C10.3 6.9 10.3 7.2 10.4 7.5C6.9 7.3 3.8 5.5 1.7 2.7C1.4 3.3 1.2 4 1.2 4.7C1.2 6.3 2.1 7.7 3.5 8.5C2.7 8.5 2 8.3 1.3 7.9C1.3 8 1.3 8 1.3 8.1C1.3 10.1 2.8 11.7 4.8 12.1C4.4 12.2 4 12.2 3.6 12.2C3.3 12.2 3 12.1 2.7 12.1C3.2 13.7 4.8 15.1 6.6 15.1C5.2 16.2 3.6 16.9 1.8 16.9C1.5 16.9 1.2 16.9 0.9 16.8C2.7 18.2 4.9 19 7.3 19C14.8 19 19 12.8 19 7.7C19 7.6 19 7.5 19 7.4C19.8 6.9 20.5 6.2 21 5.4C20.3 5.7 19.6 5.9 18.8 6.1C19.5 5.7 20.1 5.1 20.3 4.4L22 4.02z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center">
+                <p class="text-sm text-gray-500">&copy; 2025 StreamVerse. All rights reserved. Content provided for demonstration only.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Mobile Menu and Gemini API -->
+    <script>
+        // --- Gemini API Configuration ---
+        const apiKey = ""; // API Key is provided by the canvas environment
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        /**
+         * Generic function to show the custom modal.
+         * @param {string} title - The title of the modal.
+         * @param {string} content - The main text content.
+         */
+        function showModal(title, content) {
+            const modal = document.getElementById('pitch-modal');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-content').innerHTML = content;
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        }
+
+        /**
+         * Custom fetch function with exponential backoff for API resilience.
+         */
+        async function fetchWithExponentialBackoff(url, options, maxRetries = 5, delay = 1000) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    } else if (response.status === 429 || response.status >= 500) {
+                        // Rate limit or server error - retry
+                        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                        continue;
+                    } else {
+                        // Non-retryable error (e.g., 400 Bad Request)
+                        const errorData = await response.json();
+                        throw new Error(`API Error (${response.status}): ${JSON.stringify(errorData)}`);
+                    }
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                }
+            }
+        }
+
+
+        /**
+         * Calls the Gemini API to generate a marketing pitch for a TV series.
+         * @param {string} title - The series title.
+         * @param {string} genre - The primary genre.
+         * @param {string} description - The current synopsis of the series.
+         */
+        async function generatePitch(title, genre, description) {
+            const loadingHtml = `<div class="flex items-center justify-center space-x-2">
+                                    <svg class="animate-spin h-5 w-5 text-accent-yellow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span class="text-gray-400">Crafting cinematic pitch...</span>
+                                </div>`;
+            
+            showModal(`Generating Pitch for ${title}...`, loadingHtml);
+
+            const systemPrompt = "You are a world-class, punchy marketing copywriter for a streaming platform. Your job is to create an extremely compelling, two-sentence elevator pitch that makes the audience immediately want to watch the show. Do not use quotes or introductory phrases like 'This show is about'. Just deliver the two sentences.";
+            const userQuery = `Series Title: ${title}\nGenre: ${genre}\nCurrent Description: ${description}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const response = await fetchWithExponentialBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a pitch right now. Please try again.";
+
+                // Update modal with the result
+                showModal(`✨ ${title} - The Elevator Pitch`, generatedText);
+
+            } catch (error) {
+                console.error("Gemini API Call Failed:", error);
+                showModal(`Pitch Generation Failed`, `An error occurred while contacting the pitch generator: ${error.message}. Please check the console for details.`);
+            }
+        }
+
+
+        // --- Standard Mobile Menu Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('mobile-menu-button');
+            const menu = document.getElementById('mobile-menu');
+
+            // Function to toggle menu visibility
+            const toggleMenu = () => {
+                menu.classList.toggle('hidden');
+                // Optional: Change icon (from hamburger to close)
+                const icon = button.querySelector('svg path');
+                if (menu.classList.contains('hidden')) {
+                    icon.setAttribute('d', 'M4 6h16M4 12h16m-7 6h7'); // Hamburger
+                } else {
+                    icon.setAttribute('d', 'M6 18L18 6M6 6l12 12'); // Close X
+                }
+            };
+            
+            button.addEventListener('click', toggleMenu);
+
+            // Close menu when a link is clicked (for single-page navigation)
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (!menu.classList.contains('hidden')) {
+                        toggleMenu();
+                    }
+                });
+            });
+
+            // Bug fix: Close modal on 'Escape' key press
+            document.addEventListener('keydown', (e) => {
+                const modal = document.getElementById('pitch-modal');
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
