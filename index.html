@@ -1,651 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Library & Recommendations</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            /* Changed from light gray to dark gray-900 for black theme */
-            background-color: #111827; 
-        }
-        .tab-button, .age-filter-button {
-            transition: all 0.2s ease-in-out;
-            white-space: nowrap; /* Prevents wrapping on flex items */
-        }
-        .age-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.6rem;
-            border-radius: 0.5rem;
-            font-weight: 700; 
-            font-size: 0.8rem; 
-            text-transform: uppercase;
-        }
-        /* Card Hover Effect */
-        .card-hover-effect {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        /* Darker shadow on hover for contrast */
-        .card-hover-effect:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.5), 0 6px 10px -3px rgba(0, 0, 0, 0.3); 
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FilmFlare | Movie Review Database</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    :root{ --bg:#050505; --card:#1b1b1b; --text:#fff; --accent:#ff3c00; }
+    body.light{ --bg:#f5f5f5; --card:#ffffff; --text:#111; }
+    body { margin:0; font-family:'Roboto', sans-serif; background:linear-gradient(180deg, var(--bg), #111); color:var(--text); transition:.4s; }
+    header { position: sticky; top:0; z-index:1000; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); padding: 18px 40px; display:flex; justify-content:space-between; align-items:center; }
+    header h1 { margin:0; color:var(--accent); letter-spacing:1px; animation:glow 2s infinite alternate; }
+    @keyframes glow { from { text-shadow:0 0 6px var(--accent); } to { text-shadow:0 0 16px #ff6a00; } }
+    nav{display:flex;align-items:center}
+    nav a { color:#fff; margin-left:25px; text-decoration:none; font-weight:500; position:relative; }
+    nav a::after { content:''; position:absolute; left:0; bottom:-5px; width:0; height:2px; background:var(--accent); transition:0.3s; }
+    nav a:hover::after { width:100%; }
+    .toggle{ margin-left:20px; background:var(--accent); border:none; color:#fff; padding:6px 12px; border-radius:20px; cursor:pointer }
+    .hero{ height:60vh; background:linear-gradient(to bottom,rgba(0,0,0,.4),rgba(0,0,0,.9)),url('annabelle.jpg') center/cover; display:flex; align-items:flex-end; padding:50px }
+    .hero h2{ font-size:2.8em;color:#fff;margin:0 }
+    main { padding:50px; }
+    h2 { color:var(--accent); margin-bottom:30px; letter-spacing:1px; }
+    .movie-list { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:35px; }
+    .movie-item { background:var(--card); border-radius:16px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,0.7); opacity:0; transform:translateY(40px); transition:.4s; position:relative; }
+    .movie-item.show{ opacity:1; transform:translateY(0) }
+    .movie-item:hover { transform: scale(1.04); }
+    .movie-item img { width:100%; height:420px; object-fit:cover; filter:brightness(0.9); transition:0.4s; }
+    .movie-item:hover img { filter:brightness(1.1); }
+    .movie-content { padding:20px; }
+    .movie-content h3 { margin:0 0 8px; color:var(--accent); }
+    .badges { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 }
+    .badge { font-size:0.75em; padding:4px 10px; border-radius:20px; background:#2a2a2a; border:1px solid var(--accent); color:#fff }
+    .imdb { background:#f5c518; color:#000; font-weight:bold; }
+    .age { background:crimson; }
+    .info { font-size:0.85em; color:#ccc }
+    .search-bar{ width:240px; padding:8px 14px; border-radius:20px; border:none; outline:none; margin-left:25px }
+    footer { text-align:center; padding:25px; background:#000; color:#888; font-size:0.85em; }
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:2000 }
+    .modal iframe{ width:80%; height:80% }
+    .modal.show{ display:flex }
+    .online-badge{ position:absolute; top:10px; right:10px; background:limegreen; color:#000; padding:4px 8px; font-size:0.75em; border-radius:12px; font-weight:bold; }
+    .trailer-btn{ margin-top:10px; padding:6px 12px; background:var(--accent); border:none; color:#fff; border-radius:12px; cursor:pointer; }
+  </style>
 </head>
-<body class="min-h-screen">
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3">
-        <!-- Toast messages go here -->
-    </div>
+<body>
 
-    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-        <header class="text-center py-8">
-            <!-- Title changed to Trusty Reviews -->
-            <h1 class="text-4xl font-extrabold text-white mb-2">Trusty Reviews</h1>
-            <!-- Description changed -->
-            <p class="text-lg text-gray-400">Curated Content and Real-Time LLM Analysis</p>
-        </header>
+<header>
+  <h1>FilmFlare</h1>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Categories</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+    <input class="search-bar" id="search" placeholder="Search movies">
+    <button class="toggle" onclick="toggleTheme()">Theme</button>
+  </nav>
+</header>
 
-        <!-- Tab Navigation (Content Type: Movie, TV Series, Doc) -->
-        <!-- Border color changed to dark gray -->
-        <div class="mb-6 border-b border-gray-700">
-            <div class="flex flex-wrap -mb-px overflow-x-auto" id="tab-buttons">
-                <!-- Buttons will be rendered here by JS -->
-            </div>
-        </div>
-        
-        <!-- Age Filter Navigation -->
-        <!-- Background and border changed for dark theme -->
-        <div class="mb-8 p-4 bg-gray-800 rounded-xl shadow-md border border-gray-700">
-            <!-- Text color changed to light gray, border color adjusted -->
-            <h3 class="text-sm font-semibold text-gray-300 mb-3 border-b border-gray-700 pb-2">Filter by Age Recommendation:</h3>
-            <div class="flex flex-wrap gap-3 overflow-x-auto" id="age-filter-buttons">
-                <!-- Buttons will be rendered here by JS -->
-            </div>
-        </div>
-        
-        <!-- Search Bar -->
-        <!-- Background and border changed for dark theme -->
-        <div class="mb-5 p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-            <!-- Text color changed to white -->
-            <h3 class="text-xl font-bold text-white mb-4">Deep Content Scanner (LLM Search)</h3>
-            <div class="flex items-center space-x-3">
-                <!-- Input field colors adjusted for dark theme -->
-                <input type="text" id="llm-search-query" placeholder="Enter a film or series title for detailed info (e.g., Deep Sea Fury)..." 
-                       class="flex-grow px-4 py-2 border-2 border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 text-white bg-gray-700 placeholder-gray-400" required>
-                <button id="llm-search-button" 
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 ease-in-out shadow-md">
-                    Scan Intel
-                </button>
-            </div>
-        </div>
-        <!-- End Search Bar -->
+<section class="hero">
+  <h2>Featured: Annabelle Universe</h2>
+</section>
 
-        <!-- Search History Section -->
-        <!-- Background and border changed for dark theme -->
-        <div id="search-history-area" class="mb-10 p-4 bg-gray-800 rounded-xl shadow-md border border-gray-700 hidden">
-            <!-- Text color changed to light gray, border color adjusted -->
-            <h4 class="text-sm font-semibold text-gray-300 mb-2 border-b border-gray-700 pb-1">Recent LLM Queries:</h4>
-            <div id="recent-queries-list" class="flex flex-wrap gap-2">
-                <!-- History buttons go here -->
-            </div>
-        </div>
-        <!-- End Search History Section -->
+<main>
+  <h2>Horror / Mystery</h2>
+  <div class="movie-list">
+    <div class="movie-item"><span class="online-badge">Online</span><img src="annabelle.jpg"><div class="movie-content"><h3>Annabelle (2014)</h3><div class="badges"><span class="badge imdb">IMDb 5.4/10</span><span class="badge age">R</span><span class="badge">Horror</span></div><p class="info">Director: John R. Leonetti · 99 min</p><p class="info">Plot: A possessed doll terrorizes a young couple.</p><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/6Kk-Rh0roYs')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="annabelle_creation.jpg"><div class="movie-content"><h3>Annabelle: Creation (2017)</h3><div class="badges"><span class="badge imdb">IMDb 6.5/10</span><span class="badge age">R</span><span class="badge">Horror</span></div><p class="info">Director: David F. Sandberg · 109 min</p><p class="info">Plot: Orphans awaken a demon in a dollmaker’s house.</p><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/Wq8Q4IpZgOY')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="annabelle_comes_home.jpg"><div class="movie-content"><h3>Annabelle Comes Home (2019)</h3><div class="badges"><span class="badge imdb">IMDb 5.9/10</span><span class="badge age">R</span><span class="badge">Horror</span></div><p class="info">Director: Gary Dauberman · 106 min</p><p class="info">Plot: The demon doll awakens evil spirits in the Warrens’ house.</p><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/B1iVs3dUhU0')">Watch Trailer</button></div></div>
+  </div>
+</main>
 
-        <!-- Result Display Area for LLM Search -->
-        <!-- Background and shadow changed for dark theme -->
-        <div id="result-area" class="mt-8 bg-gray-800 p-6 rounded-xl shadow-2xl border-l-4 border-indigo-600 hidden">
-            <!-- Text color changed to indigo for visibility -->
-            <div id="loading-indicator" class="text-indigo-400 font-medium hidden">
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-400 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Fetching detailed cinematic dossier...</span>
-            </div>
+<main>
+  <h2>Fantasy / Adventure</h2>
+  <div class="movie-list">
+    <div class="movie-item"><span class="online-badge">Online</span><img src="harry_potter_1.jpg"><div class="movie-content"><h3>Harry Potter and the Philosopher’s Stone – Part 1 (2001)</h3><div class="badges"><span class="badge imdb">IMDb 7.6/10</span><span class="badge age">PG</span></div><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/VyHV0BRtdxo')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="harry_potter_2.jpg"><div class="movie-content"><h3>Harry Potter and the Chamber of Secrets – Part 2 (2002)</h3><div class="badges"><span class="badge imdb">IMDb 7.4/10</span><span class="badge age">PG</span></div><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/1bq0qff4iF8')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="harry_potter_3.jpg"><div class="movie-content"><h3>Harry Potter and the Prisoner of Azkaban – Part 3 (2004)</h3><div class="badges"><span class="badge imdb">IMDb 7.9/10</span><span class="badge age">PG</span></div><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/lAxgztbYDbs')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="harry_potter_4.jpg"><div class="movie-content"><h3>Harry Potter and the Goblet of Fire – Part 4 (2005)</h3><div class="badges"><span class="badge imdb">IMDb 7.7/10</span><span class="badge age">PG-13</span></div><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/VyHV0BRtdxo')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="harry_potter_5.jpg"><div class="movie-content"><h3>Harry Potter and the Order of the Phoenix – Part 5 (2007)</h3><div class="badges"><span class="badge imdb">IMDb 7.5/10</span><span class="badge age">PG-13</span></div><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/nnxNfmjrnYo')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="harry_potter_6.jpg"><div class="movie-content"><h3>Harry Potter and the Half-Blood Prince – Part 6 (2009)</h3><div class="badges"><span class="badge imdb">IMDb 7.6/10</span><span class="badge age">PG</span></div><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/9kV2_xIu4dI')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="harry_potter_7.jpg"><div class="movie-content"><h3>Harry Potter and the Deathly Hallows – Part 1 (2010)</h3><div class="badges"><span class="badge imdb">IMDb 7.7/10</span><span class="badge age">PG-13</span></div><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/mObK5XD8udk')">Watch Trailer</button></div></div>
+    <div class="movie-item"><span class="online-badge">Online</span><img src="harry_potter_8.jpg"><div class="movie-content"><h3>Harry Potter and the Deathly Hallows – Part 2 (2011)</h3><div class="badges"><span class="badge imdb">IMDb 8.1/10</span><span class="badge age">PG-13</span></div><button class="trailer-btn" onclick="openTrailer('https://www.youtube.com/embed/mObK5XD8udk')">Watch Trailer</button></div></div>
+  </div>
+</main>
 
-            <!-- Text color changed to white -->
-            <h3 class="text-2xl font-bold text-white mb-3" id="result-title"></h3>
-            
-            <div id="facts-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <!-- Facts will be inserted here -->
-            </div>
-
-            <!-- Text and border color adjusted -->
-            <h4 class="text-lg font-semibold text-indigo-400 mb-2 border-b border-gray-700 pb-1">Summary & Analysis</h4>
-            <!-- Text color changed to light gray -->
-            <p id="generated-text" class="text-gray-300 mb-4 whitespace-pre-wrap leading-relaxed"></p>
-
-            <!-- Border color adjusted -->
-            <div id="sources-area" class="mt-4 border-t pt-4 border-gray-700">
-                <!-- Text color adjusted -->
-                <p class="text-xs font-semibold text-gray-400 mb-1 hidden" id="sources-label">Grounding Sources:</p>
-                <!-- Link color is fine -->
-                <ul id="sources-list" class="list-disc list-inside space-y-1 text-sm text-indigo-400"></ul>
-            </div>
-        </div>
-        <!-- End Result Display Area -->
-
-        <!-- Content Area -->
-        <div id="content-display" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Content cards will be rendered here by JS -->
-        </div>
-
-        <!-- API Integration Mock -->
-        <!-- Background and text color adjusted for dark theme -->
-        <div id="api-status" class="mt-10 p-4 bg-yellow-900/50 border border-yellow-800 text-yellow-300 rounded-lg">
-            <p><strong>Note:</strong> The "Scan Intel" and "Read More Intel" features utilize the Gemini API with Google Search grounding for real-time information.</p>
-        </div>
-    </div>
-
-    <script>
-        // --- Gemini API Setup ---
-        const API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
-        const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
-        const apiKey = ""; // Canvas will provide this key at runtime
-
-        // Global History Management
-        const HISTORY_KEY = 'llmSearchHistory';
-        const MAX_HISTORY = 5;
-
-        // Dummy Data Structure
-        const allContent = [
-            // Movies
-            { id: 1, title: 'The Stellar Navigator', type: 'Movie', ageRating: 'PG-13', contentWarnings: 'Intense thematic elements, brief action violence.', description: 'A young pilot discovers an ancient map to a lost star system.', year: 2023, genre: 'Sci-Fi' },
-            { id: 2, title: 'Mystery of the Jade Key', type: 'Movie', ageRating: 'PG', contentWarnings: 'Mild peril and scary situations.', description: 'A family-friendly detective story set in 1920s Shanghai.', year: 2021, genre: 'Adventure' },
-            { id: 3, title: 'Deep Sea Fury', type: 'Movie', ageRating: 'R', contentWarnings: 'Strong violence, pervasive language, drug content.', description: 'Tense, action-packed thriller about a rogue submarine crew.', year: 2024, genre: 'Action' },
-            { id: 4, title: 'The Quietest Village', type: 'Movie', ageRating: 'G', contentWarnings: 'None.', description: 'A touching story about community and friendship in rural Ireland.', year: 2019, genre: 'Drama' },
-
-            // TV Series
-            { id: 5, title: 'Chronicles of the Iron Guard', type: 'TV Series', ageRating: 'TV-14', contentWarnings: 'Fantasy violence, suggestive dialogue.', description: 'Sprawling fantasy epic spanning four kingdoms.', year: 2020, genre: 'Fantasy' },
-            { id: 6, title: 'Silicon Dreams', type: 'TV Series', ageRating: 'TV-MA', contentWarnings: 'Explicit language, sexual content, graphic violence.', description: 'A gritty, futuristic tech noir series exploring AI consciousness.', year: 2022, genre: 'Thriller' },
-            { id: 7, title: 'The Great Bake Off Challenge', type: 'TV Series', ageRating: 'TV-G', contentWarnings: 'None.', description: 'Amateur bakers compete for the golden spatula.', year: 2023, genre: 'Reality' },
-            { id: 8, title: 'Rangers of the Sky', type: 'TV Series', ageRating: 'TV-Y7', contentWarnings: 'Mild cartoon action.', description: 'Animated show about teens protecting the atmosphere.', year: 2021, genre: 'Animation' },
-
-            // Documentaries
-            { id: 9, title: 'Hidden Worlds of the Sahara', type: 'Documentary', ageRating: 'G', contentWarnings: 'None.', description: 'Stunning cinematography capturing life in the desert ecosystem.', year: 2023, genre: 'Nature' },
-            { id: 10, title: 'The Code Breakers: 1944', type: 'Documentary', ageRating: 'PG', contentWarnings: 'Historical war footage.', description: 'The history and impact of wartime cryptography.', year: 2018, genre: 'History' },
-            { id: 11, title: 'Food Futures', type: 'Documentary', ageRating: 'TV-PG', contentWarnings: 'Discussions of sensitive public health topics.', description: 'Investigating sustainable agriculture and modern diets.', year: 2024, genre: 'Science' },
-            { id: 12, title: 'Art of the Unseen', type: 'Documentary', ageRating: 'TV-14', contentWarnings: 'Mature themes, brief nudity in artwork.', description: 'An in-depth look at abstract expressionist painters.', year: 2020, genre: 'Art' },
-        ];
-
-        // --- State Variables ---
-        let activeTab = 'Movie'; // Default active content type
-        let activeAgeFilter = 'All'; // Default active age group filter
-
-        // --- Configuration ---
-        const tabCategories = [
-            { key: 'Movie', label: 'Movies' },
-            { key: 'TV Series', label: 'TV Series' },
-            { key: 'Documentary', label: 'Documentaries' }
-        ];
-        
-        const ageFilterGroups = [
-            { key: 'All', label: 'All Ages', ratings: ['G', 'PG', 'PG-13', 'R', 'TV-G', 'TV-Y7', 'TV-PG', 'TV-14', 'TV-MA'] },
-            { key: 'Family', label: 'Kids & Family', ratings: ['G', 'TV-G', 'TV-Y7'] },
-            { key: 'Teen', label: 'Teens & Older', ratings: ['PG', 'PG-13', 'TV-PG', 'TV-14'] },
-            { key: 'Adult', label: 'Adults Only', ratings: ['R', 'TV-MA'] },
-        ];
-
-        // --- Core Functions ---
-
-        /**
-         * Fetches data with an exponential backoff retry strategy.
-         */
-        async function fetchWithExponentialBackoff(url, options, maxRetries = 5) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) {
-                        if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-                            const errorBody = await response.json();
-                            console.error('API Error:', errorBody);
-                            throw new Error(`API call failed with status ${response.status}: ${errorBody.error?.message || 'Unknown error'}`);
-                        }
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response;
-                } catch (error) {
-                    if (i === maxRetries - 1) {
-                        console.error("Max retries reached. Failing request.", error);
-                        throw error;
-                    }
-                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
-            }
-        }
-        
-        /**
-         * Function to display a temporary toast notification
-         */
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const color = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-            const icon = type === 'success' ? 
-                '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' :
-                '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-            
-            const toast = document.createElement('div');
-            toast.className = `p-4 flex items-center rounded-lg shadow-xl text-white ${color} transition-opacity duration-300`;
-            toast.style.opacity = '1';
-            toast.innerHTML = `${icon}<span>${message}</span>`;
-            
-            container.prepend(toast);
-
-            // Fade out and remove after 3 seconds
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        /**
-         * Determines the Tailwind class for the age rating badge.
-         */
-        function getAgeBadgeClass(rating) {
-            switch (rating) {
-                case 'G':
-                case 'TV-G':
-                case 'TV-Y7':
-                    return 'bg-green-100 text-green-800 ring-2 ring-green-300';
-                case 'PG':
-                case 'PG-13':
-                case 'TV-PG':
-                    return 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300';
-                case 'R':
-                case 'TV-14':
-                case 'TV-MA':
-                    return 'bg-red-100 text-red-800 ring-2 ring-red-300';
-                default:
-                    return 'bg-gray-200 text-gray-700 ring-2 ring-gray-300';
-            }
-        }
-
-        /**
-         * Renders a single content card, adjusted for dark theme.
-         */
-        function renderCard(item) {
-            const badgeClass = getAgeBadgeClass(item.ageRating);
-
-            return `
-                <!-- Background and border changed for dark theme -->
-                <div class="bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition duration-300 overflow-hidden border border-gray-700 p-5 flex flex-col justify-between card-hover-effect">
-                    <div>
-                        <div class="flex justify-between items-start mb-3">
-                            <!-- Text color changed to white -->
-                            <h2 class="text-xl font-bold text-white leading-snug">${item.title}</h2>
-                            <span class="${badgeClass} age-badge ml-3 flex-shrink-0">${item.ageRating}</span>
-                        </div>
-                        <!-- Text color changed to light gray -->
-                        <p class="text-sm text-gray-400 mb-4">${item.description}</p>
-                        
-                        <!-- Content Warnings Detail -->
-                        <!-- Text color adjusted for warnings -->
-                        <p class="text-xs text-gray-500 mt-2 mb-2">
-                            <span class="font-semibold text-gray-300">Warnings:</span> ${item.contentWarnings}
-                        </p>
-                        <!-- End Content Warnings Detail -->
-
-                    </div>
-                    <!-- Footer text and border color adjusted -->
-                    <div class="flex justify-between items-center text-xs text-gray-500 mt-2 pt-3 border-t border-gray-700">
-                        <span class="font-medium text-gray-400">${item.genre}</span>
-                        <span>${item.year}</span>
-                    </div>
-                    
-                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
-                         <button data-title="${item.title}" class="read-more-btn flex-grow mr-2 bg-indigo-700/20 hover:bg-indigo-700/40 text-indigo-400 font-medium py-2 rounded-lg transition duration-200 text-sm shadow-sm hover:shadow-md">
-                            Full LLM Dossier
-                        </button>
-                        <!-- Watchlist button adjusted for dark theme -->
-                        <button data-title="${item.title}" class="add-watchlist-btn p-2 bg-gray-700 hover:bg-yellow-800 text-gray-300 hover:text-yellow-300 rounded-lg transition duration-200" title="Add to Watchlist">
-                            <!-- Star Icon -->
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.636-.921 1.936 0l1.242 3.818a1 1 0 00.95.691h4.01c.969 0 1.371 1.24.588 1.81l-3.25 2.365a1 1 0 00-.364 1.118l1.242 3.818c.3.921-.755 1.688-1.548 1.118l-3.25-2.365a1 1 0 00-1.176 0l-3.25 2.365c-.793.57-1.848-.197-1.548-1.118l1.242-3.818a1 1 0 00-.364-1.118L2.091 9.246c-.783-.57-.381-1.81.588-1.81h4.01a1 1 0 00.95-.691l1.242-3.818z"></path></svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Renders all content cards based on the active content type tab AND the active age filter.
-         */
-        function renderContent() {
-            const container = document.getElementById('content-display');
-            
-            // 1. Get the list of allowed age ratings for the active filter
-            const ageRatingsForFilter = ageFilterGroups.find(g => g.key === activeAgeFilter).ratings;
-
-            // 2. Filter content
-            const filteredContent = allContent.filter(item => 
-                item.type === activeTab && ageRatingsForFilter.includes(item.ageRating)
-            );
-
-            if (filteredContent.length === 0) {
-                container.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10">No content matches both the selected category and age recommendation.</p>';
-            } else {
-                container.innerHTML = filteredContent.map(renderCard).join('');
-            }
-            
-            // Re-attach listeners after cards are rendered
-            setupLLMListeners();
-        }
-
-        // --- Tab and Filter Logic (updated for dark theme) ---
-
-        function setActiveTab(tabKey) {
-            activeTab = tabKey;
-            renderTabButtons();
-            renderContent();
-        }
-
-        function renderTabButtons() {
-            const tabButtonsContainer = document.getElementById('tab-buttons');
-            tabButtonsContainer.innerHTML = tabCategories.map(tab => {
-                const isActive = tab.key === activeTab;
-                // Text colors adjusted for dark theme
-                const activeClasses = 'text-indigo-400 border-indigo-400 font-semibold';
-                const inactiveClasses = 'text-gray-400 border-transparent hover:text-gray-300 hover:border-gray-600';
-
-                return `
-                    <button type="button" 
-                            class="tab-button inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg text-base mr-4 transition duration-200 ${isActive ? activeClasses : inactiveClasses}"
-                            onclick="setActiveTab('${tab.key}')">
-                        ${tab.label}
-                    </button>
-                `;
-            }).join('');
-        }
-        
-        function setActiveAgeFilter(filterKey) {
-            activeAgeFilter = filterKey;
-            renderAgeFilterButtons();
-            renderContent();
-        }
-
-        function renderAgeFilterButtons() {
-            const filterButtonsContainer = document.getElementById('age-filter-buttons');
-            filterButtonsContainer.innerHTML = ageFilterGroups.map(group => {
-                const isActive = group.key === activeAgeFilter;
-                const activeClasses = 'bg-indigo-600 text-white shadow-lg';
-                // Button colors adjusted for dark theme
-                const inactiveClasses = 'bg-gray-700 text-gray-300 hover:bg-gray-600';
-
-                return `
-                    <button type="button" 
-                            class="age-filter-button px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${isActive ? activeClasses : inactiveClasses}"
-                            onclick="setActiveAgeFilter('${group.key}')">
-                        ${group.label}
-                    </button>
-                `;
-            }).join('');
-        }
-        
-        // --- Search History Logic (updated for dark theme) ---
-        
-        function getHistory() {
-            try {
-                const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
-                return history;
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function saveToHistory(query) {
-            let history = getHistory();
-            // Remove existing query to prevent duplicates and put it at the front
-            history = history.filter(q => q !== query);
-            history.unshift(query);
-            // Limit history size
-            history = history.slice(0, MAX_HISTORY);
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const history = getHistory();
-            const historyArea = document.getElementById('search-history-area');
-            const historyList = document.getElementById('recent-queries-list');
-            historyList.innerHTML = '';
-
-            if (history.length > 0) {
-                historyArea.classList.remove('hidden');
-                history.forEach(query => {
-                    const button = document.createElement('button');
-                    button.type = 'button';
-                    // History button colors adjusted for dark theme
-                    button.className = 'history-btn px-3 py-1 text-xs font-medium bg-gray-700 text-gray-300 rounded-full hover:bg-indigo-800 hover:text-indigo-300 transition duration-150 shadow-sm';
-                    button.textContent = query;
-                    button.addEventListener('click', () => {
-                        document.getElementById('llm-search-query').value = query;
-                        generateGroundedSummary(query);
-                    });
-                    historyList.appendChild(button);
-                });
-            } else {
-                historyArea.classList.add('hidden');
-            }
-        }
-
-        // --- LLM Logic (updated for dark theme) ---
-        
-        function renderFact(key, value) {
-            return `
-                <!-- Fact background and border adjusted -->
-                <div class="bg-gray-700 p-3 rounded-lg border border-gray-600">
-                    <p class="text-xs font-medium text-indigo-400 uppercase">${key}</p>
-                    <!-- Text color changed to white -->
-                    <p class="text-base font-bold text-white">${value}</p>
-                </div>
-            `;
-        }
-
-        function renderGroundedSummary(candidate, query) {
-            const resultArea = document.getElementById('result-area');
-            const resultTitle = document.getElementById('result-title');
-            const factsGrid = document.getElementById('facts-grid');
-            const generatedText = document.getElementById('generated-text');
-            const sourcesList = document.getElementById('sources-list');
-
-            const rawText = candidate.content.parts[0].text.trim();
-            
-            // Clear existing content
-            factsGrid.innerHTML = '';
-            sourcesList.innerHTML = '';
-            resultTitle.textContent = query;
-
-            const [factsString, ...summaryParts] = rawText.split('SUMMARY:');
-            let summaryText = summaryParts.join('SUMMARY:').trim() || rawText;
-            let keyFacts = {};
-
-            // 1. Parse structured facts
-            if (factsString) {
-                factsString.split('|').forEach(item => {
-                    const [key, value] = item.split(':').map(s => s.trim());
-                    if (key && value) {
-                        keyFacts[key] = value;
-                    }
-                });
-            }
-
-            // 2. Populate facts grid
-            ['Year', 'Genre', 'Runtime', 'Critic Score'].forEach(key => {
-                if (keyFacts[key]) {
-                    factsGrid.innerHTML += renderFact(key, keyFacts[key]);
-                }
-            });
-
-            // 3. Populate summary text. Simple newline to paragraph conversion for readability.
-            generatedText.innerHTML = summaryText.replace(/\n\n/g, '</p><p>');
-            
-            // 4. Extract and render grounding sources
-            let sources = [];
-            const groundingMetadata = candidate.groundingMetadata;
-            const sourcesLabel = document.getElementById('sources-label');
-
-            if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                sources = groundingMetadata.groundingAttributions
-                    .map(attribution => ({
-                        uri: attribution.web?.uri,
-                        title: attribution.web?.title,
-                    }))
-                    .filter(source => source.uri && source.title);
-            }
-
-            if (sources.length > 0) {
-                sourcesLabel.classList.remove('hidden');
-                sources.forEach(source => {
-                    const listItem = document.createElement('li');
-                    // Text color adjusted for dark theme
-                    listItem.innerHTML = `<a href="${source.uri}" target="_blank" class="hover:underline text-indigo-400">${source.title || source.uri}</a>`;
-                    sourcesList.appendChild(listItem);
-                });
-            } else {
-                 sourcesLabel.classList.add('hidden');
-            }
-        }
-        
-        async function generateGroundedSummary(query) {
-            const llmSearchButton = document.getElementById('llm-search-button');
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const resultArea = document.getElementById('result-area');
-            const generatedText = document.getElementById('generated-text');
-            const resultTitle = document.getElementById('result-title');
-            
-            // 1. Scroll to the result area
-            document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            // 2. Reset UI and show loading
-            resultTitle.textContent = '';
-            generatedText.textContent = '';
-            document.getElementById('facts-grid').innerHTML = '';
-            document.getElementById('sources-list').innerHTML = '';
-            document.getElementById('sources-label').classList.add('hidden');
-            
-            resultArea.classList.remove('hidden');
-            loadingIndicator.classList.remove('hidden');
-            llmSearchButton.disabled = true;
-
-            const systemPrompt = "You are a professional cinematic intelligence assistant. Your task is to provide a comprehensive, structured summary for the movie or TV series requested, relying on real-time Google Search results. **STRICTLY format the output using these four exact key-value pairs at the beginning of your response, separated by the pipe character (|), followed by a detailed summary paragraph (2-4 paragraphs).** Example format: 'Year: 2024 | Genre: Sci-Fi, Action | Runtime: 156 mins | Critic Score: 93% | SUMMARY: [The summary paragraph here...]'";
-
-            const userQuery = `Provide the detailed structured cinematic summary for: "${query}"`;
-
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                tools: [{ "google_search": {} }], 
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-            };
-
-            try {
-                const url = `${API_URL_BASE}${MODEL_NAME}:generateContent?key=${apiKey}`;
-                const response = await fetchWithExponentialBackoff(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                const candidate = result.candidates?.[0];
-                
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    renderGroundedSummary(candidate, query);
-                    saveToHistory(query); // Success: Save query to history
-                } else {
-                    generatedText.textContent = "Error: Could not retrieve cinematic information. The model may have failed to generate content. Please try a different query.";
-                    resultTitle.textContent = `Intel for: ${query} (Error)`;
-                }
-
-            } catch (error) {
-                console.error('LLM API Call Failed:', error);
-                generatedText.textContent = `An error occurred while fetching information. Details: ${error.message}.`;
-                resultTitle.textContent = `Intel for: ${query} (Error)`;
-
-            } finally {
-                loadingIndicator.classList.add('hidden');
-                llmSearchButton.disabled = false;
-            }
-        }
-        
-        function setupLLMListeners() {
-            const llmSearchButton = document.getElementById('llm-search-button');
-            const llmSearchQueryInput = document.getElementById('llm-search-query');
-            const readMoreButtons = document.querySelectorAll('.read-more-btn');
-            const watchlistButtons = document.querySelectorAll('.add-watchlist-btn');
-            
-            // 1. Main Search Button Logic
-            if (llmSearchButton && llmSearchQueryInput) {
-                // Ensure listener is only attached once to the main button
-                if (!llmSearchButton.hasAttribute('data-listener-attached')) {
-                    const handleGenerate = () => {
-                        const query = llmSearchQueryInput.value.trim();
-                        if (query) {
-                            generateGroundedSummary(query);
-                        } else {
-                            // Border color adjusted for dark theme
-                            llmSearchQueryInput.classList.add('border-red-500');
-                            setTimeout(() => llmSearchQueryInput.classList.remove('border-red-500'), 1500);
-                        }
-                    };
-                    
-                    llmSearchButton.addEventListener('click', handleGenerate);
-                    llmSearchQueryInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault(); 
-                            handleGenerate();
-                        }
-                    });
-                    llmSearchButton.setAttribute('data-listener-attached', 'true');
-                }
-            }
-            
-            // 2. "Read More" Button Logic (Card-based search)
-            readMoreButtons.forEach(button => {
-                // Ensure listener is only attached once
-                if (button.hasAttribute('data-listener-attached-readmore')) return; 
-
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const title = button.getAttribute('data-title');
-                    // Sync the main search box with the clicked title
-                    llmSearchQueryInput.value = title;
-                    if (title) {
-                        generateGroundedSummary(title);
-                    }
-                });
-                button.setAttribute('data-listener-attached-readmore', 'true');
-            });
-            
-            // 3. "Add to Watchlist" Button Logic
-            watchlistButtons.forEach(button => {
-                // Ensure listener is only attached once
-                if (button.hasAttribute('data-listener-attached-watchlist')) return; 
-
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const title = button.getAttribute('data-title');
-                    showToast(`Added "${title}" to your Watchlist!`);
-                });
-                button.setAttribute('data-listener-attached-watchlist', 'true');
-            });
-        }
-
-
-        // Initialize the app on load
-        window.onload = () => {
-            renderTabButtons();
-            renderAgeFilterButtons();
-            renderContent(); // This calls setupLLMListeners
-            renderHistory(); // Initialize history rendering
-        };
-
-    </script>
+<footer>© 2025 FilmFlare · Movie Review Database</footer>
+<div class="modal" id="trailerModal" onclick="closeTrailer()"><iframe id="trailerFrame" src="" allowfullscreen></iframe></div>
+<script>
+search.addEventListener('keyup',()=>{ document.querySelectorAll('.movie-item').forEach(m=>{ m.style.display=m.innerText.toLowerCase().includes(search.value.toLowerCase())?'block':'none' }) })
+const observer=new IntersectionObserver(entries=>{ entries.forEach(e=>e.isIntersecting&&e.target.classList.add('show')) }); document.querySelectorAll('.movie-item').forEach(m=>observer.observe(m))
+function toggleTheme(){document.body.classList.toggle('light')}
+function openTrailer(url){trailerFrame.src=url;trailerModal.classList.add('show')}
+function closeTrailer(){trailerFrame.src='';trailerModal.classList.remove('show')}
+</script>
 </body>
 </html>
